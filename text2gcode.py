@@ -4,7 +4,7 @@ import cairo
 
 text=u'Хуй войне'
 font="Sans"
-font_size=55.0
+font_size=20.0
 font_args=[cairo.FONT_SLANT_NORMAL]
 
 surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 1, 1)
@@ -14,9 +14,10 @@ ctx.set_font_size(font_size)
 x_bearing,y_bearing,text_width,text_height,x_advance,y_advance=ctx.text_extents(text)
 ctx.move_to(-x_bearing, -y_bearing)
 ctx.text_path(text)
-#pts=ctx.copy_path_flat()
-pts=ctx.copy_path()
+pts=ctx.copy_path_flat()
+#pts=ctx.copy_path()
 cur_segment_start=(0.0,0.0)
+feed=""
 g_code=[]
 for p in pts:
   if p[0] == 0:
@@ -24,8 +25,10 @@ for p in pts:
     g_code.append('G0 X%2.5f Y%2.5f' % p[1])
     g_code.append('G1 F100.0 Z-2.0')
     cur_segment_start=p[1]
+    feed="F400.0"
   elif(p[0] == 1):
-    g_code.append('G1 X%2.5f Y%2.5f' % p[1])
+    g_code.append('G1 %s X%2.5f Y%2.5f' % (feed,p[1][0],p[1][1]))
+    feed=""
   elif(p[0] == 2):
     start=(p[1][0],p[1][1])
     middle=(p[1][2],p[1][3])
@@ -34,7 +37,8 @@ for p in pts:
   elif(p[0] == 3):
     g_code.append('G1 X%2.5f Y%2.5f' % cur_segment_start)
 
-
+for p in pts:
+  print p
 
 for l in g_code:
   print l
